@@ -13,7 +13,7 @@ _vars = {}
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-__input_file = "example.bread"
+__input_file = "example.yeast"
 __output_file= "output.bin"
 
 __is_yeast   = __input_file.endswith(".yeast")
@@ -31,6 +31,7 @@ def __file2abs_dir(file):
 	return directory
 
 def to_c(string):
+	string = string.strip()
 	_string = string.split("/")
 
 	command = _string[0]
