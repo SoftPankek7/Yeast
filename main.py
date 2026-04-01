@@ -41,10 +41,23 @@ def to_c(string):
 	else:
 		arg = args[0]
 
-	if command == "bool" and __is_yeast: # Bread doesnt like bool, it wants bol.
-		command = "bol"
-	elif command == "string" and __is_yeast:# Same with string & str
-		command = "str"
+	if __is_yeast: # Speeds up non-yeast compile time by a bit
+		if command == "bool": # Bread doesnt like bool, it wants bol.
+			command = "bol"
+		elif command == "string": # Same with string & str
+			command = "str"
+		elif command == "subtract":
+			command = "sub"
+		elif command == "multiply":
+			command = "mul"
+		elif command == "divide":
+			command = "div"
+		elif command == "modulus":
+			command = "mod"
+		elif command == "func" or command == "function":
+			command = "shrtct"
+		elif command == "@":
+			command = "print"
 
 	match command:
 		case "print":
@@ -87,19 +100,89 @@ def to_c(string):
 			else:
 				error("Compiler Error: Only 0-1 exit arguments, "+str(command))
 		case "if":
-			pass # Not Implemented (NI)
+			if len(args) != 3:
+				error("Compiler Error: if requires 3 arguments, "+str(command))
+			ops = {"equals": "==", "notequals": "!=", "greater": ">", "less": "<"}
+			if args[1] not in ops:
+				error(f"Compiler Error: Unknown operator '{args[1]}'")
+			op = ops[args[1]]
+			return f'if ({args[0]} {op} {args[2]}) {{'
+		case "endif":
+			return '}'
 		case "while":
-			pass # NI
+			if len(args) == 1:
+				if arg not in _vars or _vars[arg] != "bol":
+					error(f"Compiler Error: '{arg}' is not a bool")
+				return f'while ({arg}) {{'
+			elif len(args) == 3:
+				ops = {"equals": "==", "notequals": "!=", "greater": ">", "less": "<"}
+				if args[1] not in ops:
+					error(f"Compiler Error: Unknown operator '{args[1]}'")
+				op = ops[args[1]]
+				return f'while ({args[0]} {op} {args[2]}) {{'
+			else:
+				error("Compiler Error: while takes 1 or 3 arguments")
+		case "endwhile":
+			return '}'
 		case "add":
-			pass # Soon to be implemented
+			# add / xxx / 1
+			# cmd / arg / args[1]
+
+			if len(args) == 1:
+				if not __is_yeast:
+					error("Compiler Error: Only 2 add arguments, "+str(command))
+				else:
+					return f'{arg}++;'
+			elif len(args) == 2:
+				if arg in _vars and _vars[arg] == "int":
+					return f'{arg} += {args[1]};'
+				else:
+					error("Compiler Error: Cannot add non-ints (or nonexistants!), "+str(command))
+			else:
+				error("Compiler Error: Only 1-2 add arguments, "+str(command))
 		case "sub":
-			pass # Soon to be implemented
+			if len(args) == 1:
+				if not __is_yeast:
+					error("Compiler Error: Only 2 subtract arguments, "+str(command))
+				else:
+					return f'{arg}--;'
+			elif len(args) == 2:
+				if arg in _vars and _vars[arg] == "int":
+					return f'{arg} -= {args[1]};'
+				else:
+					error("Compiler Error: Cannot subtract non-ints (or nonexistants!), "+str(command))
+			else:
+				error("Compiler Error: Only 1-2 sub/subtract arguments, "+str(command))
 		case "mul":
-			pass # Soon to be implemented
+			if len(args) == 1:
+				error("Compiler Error: Only 2 mul arguments, "+str(command))
+			elif len(args) == 2:
+				if arg in _vars and _vars[arg] == "int":
+					return f'{arg} *= {args[1]};'
+				else:
+					error("Compiler Error: Cannot mul non-ints (or nonexistants!), "+str(command))
+			else:
+				error("Compiler Error: Only 1-2 mul/multiply arguments, "+str(command))
 		case "div":
-			pass # Soon to be implemented
+			if len(args) == 1:
+				error("Compiler Error: Only 2 div arguments, "+str(command))
+			elif len(args) == 2:
+				if arg in _vars and _vars[arg] == "int":
+					return f'{arg} /= {args[1]};'
+				else:
+					error("Compiler Error: Cannot div non-ints (or nonexistants!), "+str(command))
+			else:
+				error("Compiler Error: Only 1-2 div/divide arguments, "+str(command))
 		case "mod":
-			pass # Soon to be implemented
+			if len(args) == 1:
+				error("Compiler Error: Only 2 mod arguments, "+str(command))
+			elif len(args) == 2:
+				if arg in _vars and _vars[arg] == "int":
+					return f'{arg} = {arg} % {args[1]};'
+				else:
+					error("Compiler Error: Cannot mod non-ints (or nonexistants!), "+str(command))
+			else:
+				error("Compiler Error: Only 1-2 mod/modulus arguments, "+str(command))
 		case "wait":
 			if arg in _vars or arg.isdigit():
 				return f'wait({arg});'
@@ -153,13 +236,17 @@ def _compile_file(path, out):
 	gen_boilerplate(out)
 
 	with open(path, 'rt') as _input_file, open(out, "at") as _output_file:
+		if __is_yeast:                          # Bread requires you to define True/False. I made sure it is defined.
+			print(to_c("bool/True/true"))
+			print(to_c("bool/False/false"))
+				
 		for line in _input_file:
 			if line.strip() == "":
 				continue
 				
 			if line[0:2] == ";;" and __is_yeast: # Bread doesnt allow comments
 				continue
-
+				
 			print(to_c(line))
 
 		print("}")
