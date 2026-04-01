@@ -205,6 +205,7 @@ int main() {
 // https://github.com/SoftPankek7/Yeast. Based on the Bread programming language, see:
 // https://github.com/angrypig555/bread.
 // Compiler is MIT Licensed!!!
+// Header v2
 			   
 #ifndef YEAST_RUNTIME_H
 #define YEAST_RUNTIME_H
@@ -212,12 +213,13 @@ int main() {
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 typedef char* string;
 
-#define print_str(x)  printf("%s\n", x)
-#define print_int(x)  printf("%d\n", x)
-#define print_bol(x)  printf("%d\n", x)
+#define print_str(x)  printf("%s\\n", x)
+#define print_int(x)  printf("%d\\n", x)
+#define print_bol(x)  printf("%d\\n", x)
 
 #define input(x)      fgets(x, 65536, stdin);
 
