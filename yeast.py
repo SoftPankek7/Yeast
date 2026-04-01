@@ -1,4 +1,4 @@
-# Yeast - a bread transpiler
+# Yeast - an improved bread transpiler, rewritten in Python
 import os
 import shutil
 import subprocess

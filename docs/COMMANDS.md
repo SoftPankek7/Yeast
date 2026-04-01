@@ -1,4 +1,4 @@
-# The bread programming language
+# The Yeast programming language
 
 -----
 
@@ -8,7 +8,8 @@ Bread is transpiled into c++, and compiled from there with g++/clang.
 
 So, the stack would be:
 
-``uncompiled.bread -> ./bread -> g++/clang -> ./compiled.out``
+``uncompiled.yeast -> yeast.py -> g++/clang -> ./compiled.out``
+
 
 -----
 
@@ -20,7 +21,7 @@ So, the stack would be:
 
 ### Defining Variables
 
-In bread, every integer, boolean and string must be defined before being used.
+In Yeast, every integer, boolean and string must be defined before being used.
 
 `int/foo/5` - Define an integer (example: foo with the value of 5)
 
@@ -48,7 +49,7 @@ If you want your code to exit, use the `exit/xxx` function, where ``xxx`` is the
 
 To declare an if statement, use the if function like this:
 
-```bread
+```Yeast
 if/foo/equals/bar
     print/foo equals bar!
     exit/1
@@ -65,7 +66,7 @@ For now, all variables in an if statement have to be declared as a variable befo
 
 To declare a while statement, you can use the built in while function like this:
 
-```bread
+```Yeast
 while/foo/true
     print/foo is true
     bol/foo/false
@@ -96,8 +97,8 @@ These are only just examples, but the numbers can be replaced with an integer.
 
 ### Functions
 
-In bread, functions are shortcuts.
-Shortcuts always have to be defined at the top of the .bread file and must start with
+In Yeast, functions are shortcuts.
+Shortcuts always have to be defined at the top of the .Yeast file and must start with
 `shrtct/shortcutname`
 and end with
 `endshrtrct/`
@@ -105,7 +106,7 @@ Currently you cannot pass anything inside the shortcut, if you want to use a var
 You do not need to add tabs while defining what a shortcut does.
 Here is an example of a shortcut.
 
-```bread
+```Yeast
 shrtct/foo
     print/Im a shortcut!
     int/ran/1
@@ -115,7 +116,7 @@ endshrtct/
 A shortcut must be declared before being used.
 It can be used like this (in this example, foo is the shortcut name):
 
-```bread
+```Yeast
 code...
 foo
 more code...
@@ -129,13 +130,13 @@ Shortcuts should not exit, if yes they will lead to errors while compiling.
 
 -----
 
-```bread
+```Yeast
 print/Hello World!
 ```
 
 Prints "Hello, World" - and exits with 0.
 
-```bread
+```Yeast
 int/counter/0
 
 while/counter/equals/10
