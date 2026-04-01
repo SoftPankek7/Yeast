@@ -6,19 +6,51 @@ import sys
 
 version = "1.0.0"
 
+___settings = {
+	"keepTempC": False, # Whether it should keep tmp.c for future use
+	"forceComp": False, # Could be a string set to the compiler (GCC, CLANG, CL, ETC.)
+	"forceYeast":False, # Whether it should check if it is yeast or not
+	"forceBread":False, # ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ bread ↑↑↑↑↑↑
+
+	"inputFile": "program.yeast", # ALWAYS a str
+	"outputFile":"output"         # ↑↑↑↑↑↑↑↑↑↑↑↑
+}
+
+
 _vars = {}
 _funcs = []
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-__input_file = input("(TEST) Input File:  ") or "example.yeast"
-__output_file= "output.bin"
-
-__is_yeast   = __input_file.endswith(".yeast")
+if ___settings["forceBread"]:
+	__is_yeast = False
+elif ___settings["forceYeast"]:
+	__is_yeast = True
+else:
+	__is_yeast = ___settings["inputFile"].endswith(".yeast")
 
 def error(string) -> None:
 	print(string)
 	exit(67420)
+
+if len(sys.argv) < 2:
+    error("Usage: python main.py <file> [options]")
+
+___settings["inputFile"] = sys.argv[1]
+
+for i in sys.argv[2:]:
+	if i.startswith("-o="):
+		___settings["outputFile"] = i[len("-o="):]
+	elif i == "--keep-temp-c":
+		___settings["keepTempC"] = True
+	elif i.startswith("--comp="):
+		___settings["forceComp"] = i[len("--comp="):]
+	elif i == "--force-yeast":
+		___settings["forceYeast"] = True
+	elif i == "--force-bread":
+		___settings["forceBread"] = True
+	else:
+		error(f"Unknown argument '{i}'")
 
 def __file2abs_dir(file) -> str:
 	expanded = os.path.expanduser(file)
@@ -244,20 +276,40 @@ typedef char* string;
 """)
 
 def _get_compiler():
-	if shutil.which("gcc"):
-		return ["gcc", "tmp.c", "-o", __output_file]
-	elif shutil.which("cc"):
-		return ["cc", "tmp.c", "-o", __output_file]
-	elif shutil.which("cl"):
-		return ["cl", "tmp.c", __output_file]
-	elif shutil.which("eccp"):
-		return ["eccp", "tmp.c", "-m", "-o", __output_file]
-	elif shutil.which("ibm-clang"):
-		return ["ibm-clang", "tmp.c",] # I couldnt find any good docs
-	elif shutil.which("clang"):     # Anything but clang!
-		return ["clang", "tmp.c", "-o", __output_file]
+	if ___settings["forceComp"] == False:
+		if shutil.which("gcc"):
+			return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+		elif shutil.which("cc"):
+			return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+		elif shutil.which("cl"):
+			return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+		elif shutil.which("eccp"):
+			return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+		elif shutil.which("ibm-clang"):
+			return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs
+		elif shutil.which("clang"):
+			return ["clang", "tmp.c", "-o", ___settings["outputFile"]]
+		else:
+			error("Compiler Error: No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
 	else:
-		error("Compiler Error: No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
+		match ___settings["forceComp"].lower():
+			case "gcc":
+				return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+			case "cc":
+				return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+			case "cl":
+				return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+			case "eccp":
+				return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+			case "ibm-clang":
+				return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs
+			case "clang":
+				return ["clang", "tmp.c", "-o", ___settings["outputFile"]]
+			case "dont":
+				___settings["keepTempC"] = True
+				return [sys.executable, "-c", "pass"]
+			case _:
+				error("Compiler Error: Forced compiler is not availible.")
 
 def _inter_compiler(file):
 	result = subprocess.run(_get_compiler(), capture_output=True, text=True)
@@ -298,9 +350,11 @@ def _compile_file(path, out):
         _output_file.write("return 0;\n}\n")
 
 if __name__ == "__main__":
-	print(version)
+	print(f"Yeast v{version}")
 	try:
-		_compile_file(__input_file, "tmp.c")
+		_compile_file(___settings["inputFile"], "tmp.c")
 		_inter_compiler("tmp.c")
 	finally:
-		os.remove("tmp.c")
+		if os.path.exists("tmp.c"):
+			if not ___settings["keepTempC"]:
+				os.remove("tmp.c")
