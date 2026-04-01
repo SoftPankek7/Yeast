@@ -273,3 +273,5 @@ def _compile_file(path, out):
 if __name__ == "__main__":
 	_compile_file(__input_file, "tmp.c")
 	_inter_compiler("tmp.c")
+
+	os.remove("tmp.c")
