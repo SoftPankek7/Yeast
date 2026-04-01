@@ -1,0 +1,13 @@
+int/count
+bool/troo/true
+
+while/troo
+    if/count/equals/10
+        exit/0
+
+    endif/
+
+    print/count
+
+    add/count/1
+endwhile/
