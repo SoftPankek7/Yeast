@@ -2,12 +2,16 @@
 import os
 import shutil
 import subprocess
+import sys
+
+version = "1.0.0"
 
 _vars = {}
+_funcs = []
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-__input_file = "example.yeast"
+__input_file = input("(TEST) Input File:  ") | "example.yeast"
 __output_file= "output.bin"
 
 __is_yeast   = __input_file.endswith(".yeast")
@@ -182,21 +186,32 @@ def to_c(string) -> str:
 				return f'wait({arg});'
 			else:
 				error("Compiler Error: Only 1 wait argument, "+str(command))
-		case "shrtct": 
-			pass # NI
+		case "shrtct":
+			if arg == "":
+				error("Compiler Error: shortcut must have a name")
+			_funcs.append(arg)
+			return f"§void {arg}() {{"  # § prefix = goes to func buffer, not main
+
+		case "endshrtct":
+			return "§}"
+
 		case _:
-			error("Compiler Error: Unknown Command, "+str(command))
+			if string.strip() in _funcs:
+				return f"{string.strip()}();"
+			error(f"Compiler Error: Unknown command '{command}'")
 
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
 		source.write("""
 // Generated with the Yeast Programming Language
-// https://github.com/SoftPankek7/Yeast. Based on the Bread programming language, see:
+// https://github.com/SoftPankek7/Yeast.
+//
+// Based on the Bread programming language, see:
 // https://github.com/angrypig555/bread.
+//
 // Compiler is MIT Licensed!!!
 
 #include "yeast.h"
-int main() {
 """)
 	
 	with open(f"{__file2abs_dir(path)}{___path_sep}yeast.h", "wt") as header:
@@ -251,27 +266,41 @@ def _inter_compiler(file):
 		error("Compiler Error: C compilation failed")
 
 def _compile_file(path, out):
-	gen_boilerplate(out)
+    gen_boilerplate(out)
+    
+    func_lines = []
+    main_lines = []
 
-	with open(path, 'rt') as _input_file, open(out, "at") as _output_file:
-		if __is_yeast: # Bread requires you to define True/False. I made sure it is defined.
-			_output_file.write(to_c("bool/True/true")+"\n")
-			_output_file.write(to_c("bool/False/false")+"\n")
-				
-		for line in _input_file:
-			if line.strip() == "":
-				continue
-				
-			if line[0:2] == ";;" and __is_yeast: # Bread doesnt allow comments
-				continue
-				
-			_output_file.write(to_c(line)+"\n")
+    with open(path, 'rt') as _input_file:
+        if __is_yeast:
+            main_lines.append(to_c("bool/True/true"))
+            main_lines.append(to_c("bool/False/false"))
 
-		_output_file.write("return 0;\n")
-		_output_file.write("}\n")
+        for line in _input_file:
+            if line.strip() == "":
+                continue
+            if line[0:2] == ";;" and __is_yeast:
+                continue
+            result = to_c(line)
+            if result is None:
+                continue
+            if result.startswith("§"):
+                func_lines.append(result[1:])
+            else:
+                main_lines.append(result)
+
+    with open(out, "at") as _output_file:
+        for line in func_lines:
+            _output_file.write(line + "\n")
+        _output_file.write("int main() {\n")
+        for line in main_lines:
+            _output_file.write(line + "\n")
+        _output_file.write("return 0;\n}\n")
 
 if __name__ == "__main__":
-	_compile_file(__input_file, "tmp.c")
-	_inter_compiler("tmp.c")
-
-	os.remove("tmp.c")
+	print(version)
+	try:
+		_compile_file(__input_file, "tmp.c")
+		_inter_compiler("tmp.c")
+	finally:
+		os.remove("tmp.c")
