@@ -250,6 +250,7 @@ def _compile_file(path, out):
 				
 			print(to_c(line))
 
+		print("return 0;")
 		print("}")
 
 if __name__ == "__main__":
