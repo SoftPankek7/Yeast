@@ -1,5 +1,7 @@
 # Yeast - a bread transpiler
 import os
+import shutil
+import subprocess
 
 _vars = {}
 
@@ -224,6 +226,28 @@ typedef char* string;
 #endif
 """)
 
+def _get_compiler():
+	if shutil.which("gcc"):
+		return ["gcc", "tmp.c", "-o", __output_file]
+	elif shutil.which("cc"):
+		return ["cc", "tmp.c", "-o", __output_file]
+	elif shutil.which("cl"):
+		return ["cl", "tmp.c", __output_file]
+	elif shutil.which("eccp"):
+		return ["eccp", "tmp.c", "-m", "-o", __output_file]
+	elif shutil.which("ibm-clang"):
+		return ["ibm-clang", "tmp.c",] # I couldnt find any good docs
+	elif shutil.which("clang"):     # Anything but clang!
+		return ["clang", "tmp.c", "-o", __output_file]
+	else:
+		error("Compiler Error: No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
+
+def _inter_compiler(file):
+	result = subprocess.run(_get_compiler(), capture_output=True, text=True)
+	if result.returncode != 0:
+		print(result.stderr)
+		error("Compiler Error: C compilation failed")
+
 def _compile_file(path, out):
 	gen_boilerplate(out)
 
@@ -245,4 +269,5 @@ def _compile_file(path, out):
 		_output_file.write("}\n")
 
 if __name__ == "__main__":
-	_compile_file(__input_file, __output_file)
+	_compile_file(__input_file, "tmp.c")
+	_inter_compiler("tmp.c")
