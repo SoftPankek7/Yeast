@@ -3,14 +3,6 @@ import os
 
 _vars = {}
 
-# Expected:
-#
-# {
-#     "foo": "int",
-#	  "bar": "str",
-# 	  "baz": "bol"         # (Or bool too, if on yeast)
-# }
-
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
 __input_file = "example.yeast"
@@ -18,19 +10,18 @@ __output_file= "output.bin"
 
 __is_yeast   = __input_file.endswith(".yeast")
 
-
-def error(string):
+def error(string) -> None:
 	print(string)
 	exit(67420)
 
-def __file2abs_dir(file):
+def __file2abs_dir(file) -> str:
 	expanded = os.path.expanduser(file)
 	absolute = os.path.abspath(expanded)
 	directory = os.path.dirname(absolute)
 
 	return directory
 
-def to_c(string):
+def to_c(string) -> str:
 	string = string.strip()
 	_string = string.split("/")
 
@@ -237,9 +228,9 @@ def _compile_file(path, out):
 	gen_boilerplate(out)
 
 	with open(path, 'rt') as _input_file, open(out, "at") as _output_file:
-		if __is_yeast:                          # Bread requires you to define True/False. I made sure it is defined.
-			print(to_c("bool/True/true"))
-			print(to_c("bool/False/false"))
+		if __is_yeast: # Bread requires you to define True/False. I made sure it is defined.
+			_output_file.write(to_c("bool/True/true")+"\n")
+			_output_file.write(to_c("bool/False/false")+"\n")
 				
 		for line in _input_file:
 			if line.strip() == "":
@@ -248,10 +239,10 @@ def _compile_file(path, out):
 			if line[0:2] == ";;" and __is_yeast: # Bread doesnt allow comments
 				continue
 				
-			print(to_c(line))
+			_output_file.write(to_c(line)+"\n")
 
-		print("return 0;")
-		print("}")
+		_output_file.write("return 0;\n")
+		_output_file.write("}\n")
 
 if __name__ == "__main__":
 	_compile_file(__input_file, __output_file)
