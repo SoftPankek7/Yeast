@@ -11,7 +11,7 @@ _funcs = []
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-__input_file = input("(TEST) Input File:  ") | "example.yeast"
+__input_file = input("(TEST) Input File:  ") or "example.yeast"
 __output_file= "output.bin"
 
 __is_yeast   = __input_file.endswith(".yeast")
