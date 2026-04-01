@@ -6,7 +6,9 @@ _vars = {}
 # Expected:
 #
 # {
-#     "foo": "int"
+#     "foo": "int",
+#	  "bar": "str",
+# 	  "baz": "bol"         # (Or bool too, if on yeast)
 # }
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
@@ -16,6 +18,10 @@ __output_file= "output.bin"
 
 __is_yeast   = __input_file.endswith(".yeast")
 
+
+def error(string):
+	print(string)
+	exit(67420)
 
 def __file2abs_dir(file):
 	expanded = os.path.expanduser(file)
@@ -28,13 +34,81 @@ def to_c(string):
 	_string = string.split("/")
 
 	command = _string[0]
-	arg     = _string[1]
+	args    = _string[1:]
+
+	if len(args) == 0:
+		arg = ""
+	else:
+		arg = args[0]
+
+	if command == "bool" and __is_yeast: # Bread doesnt like bool, it wants bol.
+		command = "bol"
+	elif command == "string" and __is_yeast:# Same with string & str
+		command = "str"
 
 	match command:
 		case "print":
-			return f'printf({arg[1]});'
+			if arg in _vars:
+				return f'print_{_vars[arg]}({arg});'
+			else:
+				return f'print_str("{arg}");'
+		case "in":
+			_vars[arg] = "str"
+			return f'input({arg});'
+		case  "int":
+			_vars[arg] = "int"
+			if len(args) == 1:
+				return f'int {arg};'
+			elif len(args) == 2:
+				return f'int {args[0]} = {args[1]};'
+			else:
+				error("Compiler Error: Only 1-2 int arguments, "+str(command))
+		case "bol":
+			_vars[arg] = "bol"
+			if len(args) == 1:
+				return f'bool {arg};'
+			elif len(args) == 2:
+				return f'bool {args[0]} = {args[1]};'
+			else:
+				error("Compiler Error: Only 1-2 bol/bool arguments, "+str(command))
+		case "str":
+			_vars[arg] = "str"
+			if len(args) == 1:
+				return f'string {arg};'
+			elif len(args) == 2:
+				return f'string {args[0]} = {args[1]};'
+			else:
+				error("Compiler Error: Only 1-2 str/string arguments, "+str(command))
+		case "exit":
+			if len(args) == 1:
+				return f'exit({arg});'
+			elif len(args) == 0:
+				return f'exit(0);'
+			else:
+				error("Compiler Error: Only 0-1 exit arguments, "+str(command))
+		case "if":
+			pass # Not Implemented (NI)
+		case "while":
+			pass # NI
+		case "add":
+			pass # Soon to be implemented
+		case "sub":
+			pass # Soon to be implemented
+		case "mul":
+			pass # Soon to be implemented
+		case "div":
+			pass # Soon to be implemented
+		case "mod":
+			pass # Soon to be implemented
+		case "wait":
+			if arg in _vars or arg.isdigit():
+				return f'wait({arg});'
+			else:
+				error("Compiler Error: Only 1 wait argument, "+str(command))
+		case "shrtct": 
+			pass # NI
 		case _:
-			print("Compiler Error: Unknown Command, "+str(command))
+			error("Compiler Error: Unknown Command, "+str(command))
 
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
@@ -66,7 +140,9 @@ typedef char* string;
 
 #define print_str(x)  printf("%s\n", x)
 #define print_int(x)  printf("%d\n", x)
-#define print_str(x)  printf("%d\n", x)
+#define print_bol(x)  printf("%d\n", x)
+
+#define input(x)      fgets(x, 65536, stdin);
 
 #define wait(x)       sleep(x)
 

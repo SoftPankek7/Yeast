@@ -13,9 +13,11 @@ So, the stack would be:
 -----
 
 ### Basic commands
+
 `print/Hello World!` - Prints hello world, No quotes required! If you want to print a string or integer or boolean, you just have to write the name of the string, boolean or integer.
 
 -----
+
 ### Defining Variables
 
 In bread, every integer, boolean and string must be defined before being used.
@@ -34,6 +36,7 @@ For example, ``bol/foo``.
 -----
 
 ### Exit codes
+
 At the end of the code, a exit/0 will automatically be added on the compiler level.
 If you want your code to exit, use the `exit/xxx` function, where ``xxx`` is the **exit code**.
 
@@ -42,14 +45,16 @@ If you want your code to exit, use the `exit/xxx` function, where ``xxx`` is the
 -----
 
 ### If statements
+
 To declare an if statement, use the if function like this:
 
-```
+```bread
 if/foo/equals/bar
     print/foo equals bar!
     exit/1
 endif/
 ```
+
 > Tabs are optional.
 
 For now, all variables in an if statement have to be declared as a variable before it.
@@ -57,8 +62,10 @@ For now, all variables in an if statement have to be declared as a variable befo
 -----
 
 ### While statements
+
 To declare a while statement, you can use the built in while function like this:
-```
+
+```bread
 while/foo/true
     print/foo is true
     bol/foo/false
@@ -68,7 +75,9 @@ endwhile/
 -----
 
 ### Mathematics
+
 There are 4 basic maths functions, which are:
+
 - `add/foo/4` - Addition. Example: Adds 4 to foo
 - `sub/foo/4` - Subtraction. Example: Substracts 4 from foo
 - `mul/foo/4` - Multiplication. Example: Multiplies foo by 4
@@ -77,11 +86,16 @@ There are 4 basic maths functions, which are:
 
 These are only just examples, but the numbers can be replaced with an integer.
 
-------
-### Other functions
-- `wait/5` - Stop the program for X second (5 for example)
 -----
+
+### Other functions
+
+- `wait/5` - Stop the program for X second (5 for example)
+
+-----
+
 ### Functions
+
 In bread, functions are shortcuts.
 Shortcuts always have to be defined at the top of the .bread file and must start with
 `shrtct/shortcutname`
@@ -90,32 +104,38 @@ and end with
 Currently you cannot pass anything inside the shortcut, if you want to use a variable inside the shortcut you have to define it before using it in the shortcut or else it will only be local to that shortcut.
 You do not need to add tabs while defining what a shortcut does.
 Here is an example of a shortcut.
-```
+
+```bread
 shrtct/foo
     print/Im a shortcut!
     int/ran/1
 endshrtct/
 ```
+
 A shortcut must be declared before being used.
 It can be used like this (in this example, foo is the shortcut name):
-```
+
+```bread
 code...
 foo
 more code...
 ```
+
 Shortcuts should not exit, if yes they will lead to errors while compiling.
 
 -----
+
 ### Example Programs
 
 -----
-```
+
+```bread
 print/Hello World!
 ```
 
 Prints "Hello, World" - and exits with 0.
 
-```
+```bread
 int/counter/0
 
 while/counter/equals/10
