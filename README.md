@@ -1,6 +1,8 @@
-![Yeast Logo](docs/icon_x128.png)
+<p align="center">
+    <img src="docs/icon_x128.png">
+</p>
 
-# Yeast
+<h1 align="center">Yeast</h1>
 
 A faster, better, and more generally improved version of [Bread programming language](https://github.com/angrypig555/bread).
 
