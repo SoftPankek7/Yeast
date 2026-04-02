@@ -19,6 +19,7 @@ ___settings = {
 
 _vars = {}
 _funcs = []
+_loop_num = 0
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
@@ -40,7 +41,7 @@ Deafults:
 	   --keep-c       | False""")
 
 if len(sys.argv) < 2:
-    error("Usage: python main.py <file> [options]")
+	error("Usage: python main.py <file> [options]")
 
 ___settings["inputFile"] = sys.argv[1]
 
@@ -245,11 +246,24 @@ def to_c(string) -> str:
 
 		case "endshrtct":
 			return "§}"
-
+		
+		case "loop":
+			if not __is_yeast:
+				___to_c_err(command)
+				
+			if not arg.isdigit():
+				error("Compiler Error: loop requires a number")
+			if len(args) < 2:
+				error("Compiler Error: loop requires a command")
+			inner = to_c("/".join(args[1:]))
+			return "\n".join([inner] * int(arg))
 		case _:
 			if string.strip() in _funcs:
 				return f"{string.strip()}();"
-			error(f"Compiler Error: Unknown command '{command}'")
+			___to_c_err(command)
+
+def ___to_c_err(command):
+	error(f"Compiler Error: Unknown command '{command}'")
 
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
@@ -337,36 +351,41 @@ def _inter_compiler(file):
 		error("Compiler Error: C compilation failed")
 
 def _compile_file(path, out):
-    gen_boilerplate(out)
-    
-    func_lines = []
-    main_lines = []
+	gen_boilerplate(out)
+	
+	func_lines = []
+	main_lines = []
 
-    with open(path, 'rt') as _input_file:
-        if __is_yeast:
-            main_lines.append(to_c("bool/True/true"))
-            main_lines.append(to_c("bool/False/false"))
+	with open(path, 'rt') as _input_file:
+		if __is_yeast:
+			main_lines.append(to_c("bool/True/true"))
+			main_lines.append(to_c("bool/False/false"))
 
-        for line in _input_file:
-            if line.strip() == "":
-                continue
-            if line[0:2] == ";;" and __is_yeast:
-                continue
-            result = to_c(line)
-            if result is None:
-                continue
-            if result.startswith("§"):
-                func_lines.append(result[1:])
-            else:
-                main_lines.append(result)
+		for line in _input_file:
+			if line.strip() == "":
+				continue
+			if line[0:2] == ";;" and __is_yeast:
+				continue
+			result = to_c(line)
+			if result is None:
+				continue
+			if result.startswith("§"):
+				func_lines.append(result[1:])
+			else:
+				if _loop_num == 0:
+					main_lines.append(result)
+				else:
+					while _loop_num != 0:
+						main_lines.append(result)
+						_loop_num -= 1
 
-    with open(out, "at") as _output_file:
-        for line in func_lines:
-            _output_file.write(line + "\n")
-        _output_file.write("int main() {\n")
-        for line in main_lines:
-            _output_file.write(line + "\n")
-        _output_file.write("return 0;\n}\n")
+	with open(out, "at") as _output_file:
+		for line in func_lines:
+			_output_file.write(line + "\n")
+		_output_file.write("int main() {\n")
+		for line in main_lines:
+			_output_file.write(line + "\n")
+		_output_file.write("return 0;\n}\n")
 
 if __name__ == "__main__":
 	print(f"Yeast v{version}")
