@@ -1,4 +1,4 @@
-![Yeast Logo](docs/icon.png)
+![Yeast Logo](docs/icon_x128.png)
 
 # Yeast
 
