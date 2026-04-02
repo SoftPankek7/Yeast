@@ -76,7 +76,7 @@ def __file2abs_dir(file) -> str:
 
 	return directory
 
-def to_c(string) -> str:
+def to_c(string) -> str | None:
 	string = string.strip()
 	_string = string.split("/")
 
@@ -343,6 +343,8 @@ def _get_compiler():
 				return [sys.executable, "-c", "pass"]
 			case _:
 				error("Compiler Error: Forced compiler is not availible.")
+
+	return []
 
 def _inter_compiler(file):
 	result = subprocess.run(_get_compiler(), capture_output=True, text=True)
