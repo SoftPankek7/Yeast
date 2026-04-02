@@ -144,4 +144,4 @@ exit        -- exit with 0
 
 ## License
 
-MIT — based on [Bread](https://github.com/angrypig555/bread) by angrypig555, also MIT licensed.
+MIT — based on [Bread](https://github.com/angrypig555/bread) by angrypig555, [also MIT licensed](https://github.com/angrypig555/bread/blob/main/LICENSE).
