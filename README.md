@@ -50,6 +50,7 @@ python main.py hello.yeast -o=hello
 | `sub/foo` (--) | ❌ | ✅ |
 | `True`/`False` built-in | ❌ | ✅ |
 | **Raw** C editing | ❌ | ✅ |
+| ``if``/``else`` instead of only ``if`` | ❌ | ✅ |
 
 Literally does everything bread can **+ more**
 Also, note that Yeast *is backwards compatible by design*. To force bread, rename your file from ``example.yeast`` to ``example.bread``, *or* use the compiler's ``--force-bread`` flag. 

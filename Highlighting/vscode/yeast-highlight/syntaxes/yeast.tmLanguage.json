@@ -1,0 +1,38 @@
+{
+    "name": "Yeast",
+    "scopeName": "source.yeast",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords" },
+        { "include": "#operators" },
+        { "include": "#numbers" },
+        { "include": "#strings" },
+        { "include": "#raw_c" }
+    ],
+    "repository": {
+        "comments": {
+            "name": "comment.line.yeast",
+            "match": ";;.*$"
+        },
+        "keywords": {
+            "name": "keyword.control.yeast",
+            "match": "^\\s*(print|int|str|string|bol|bool|in|exit|if|endif|else|while|endwhile|add|sub|mul|div|mod|wait|shrtct|endshrtct|func|function|loop|@|subtract|multiply|divide|modulus)(?=/|$)"
+        },
+        "operators": {
+            "name": "keyword.operator.yeast",
+            "match": "\\b(equals|notequals|greater|less)\\b"
+        },
+        "numbers": {
+            "name": "constant.numeric.yeast",
+            "match": "\\b[0-9]+\\b"
+        },
+        "strings": {
+            "name": "string.unquoted.yeast",
+            "match": "(?<=/)[^/\\n]+$"
+        },
+        "raw_c": {
+            "name": "markup.inline.raw.yeast",
+            "match": "^\\s*\\\\.*$"
+        }
+    }
+}

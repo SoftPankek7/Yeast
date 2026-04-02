@@ -157,8 +157,13 @@ def to_c(string) -> str | None:
 				error(f"Compiler Error: Unknown operator '{args[1]}'")
 			op = ops[args[1]]
 			return f'if ({args[0]} {op} {args[2]}) {{'
+		case "else":
+			if __is_yeast:
+				return "} else {"
+			else:
+				___to_c_err(command)
 		case "endif":
-			return '}'
+			return "}"
 		case "while":
 			if len(args) == 1:
 				if arg not in _vars or _vars[arg] != "bol":

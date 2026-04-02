@@ -1,0 +1,17 @@
+output
+output.bin
+*.bin
+
+tmp.c
+yeast.h
+
+*.vsix
+
+__pycache__/
+*.pyc
+*.pyo
+
+.vscode/
+
+example.yeast
+example.bread

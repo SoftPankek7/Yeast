@@ -1,0 +1,38 @@
+{
+    "name": "yeast-lang",
+    "displayName": "Yeast/Bread Syntax",
+    "description": "Highlighting for Yeast & Bread - https://github.com/SoftPankek7/Yeast/",
+    "version": "1.0.1",
+    "engines": { "vscode": "^1.60.0" },
+    "categories": ["Programming Languages"],
+    "publisher": "CharlieTulip",
+    "license": "MIT",
+    "contributes": {
+        "languages": [
+            {
+                "id": "yeast",
+                "aliases": ["Yeast", "yeast"],
+                "extensions": [".yeast"],
+                "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "bread",
+                "aliases": ["Bread", "bread"],
+                "extensions": [".bread"],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "yeast",
+                "scopeName": "source.yeast",
+                "path": "./syntaxes/yeast.tmLanguage.json"
+            },
+            {
+                "language": "bread",
+                "scopeName": "source.bread",
+                "path": "./syntaxes/yeast.tmLanguage.json"
+            }
+        ]
+    }
+}
