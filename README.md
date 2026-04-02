@@ -1,12 +1,12 @@
 <p align="center">
-    <img src="docs/icon_x128.png">
+    <img src="docs/icon_x128.png" alt="Yeast Logo">
 </p>
 
 <h1 align="center">Yeast</h1>
 
 A faster, better, and more generally improved version of [Bread programming language](https://github.com/angrypig555/bread).
 
-> Also, instead of **C++** (that Bread compiles to), **Yeast compiles to C**
+> Also, instead of **C++** (that Bread compiles to), **Yeast compiles to C**.
 ----
 
 ## Usage
@@ -32,101 +32,16 @@ python main.py hello.yeast -o=hello
 ./hello
 ```
 
----
-
-## Language Reference
-
-### Variables
-
-```
-int/foo/5        -- integer with value
-int/foo          -- empty integer
-str/foo/hello    -- string with value
-str/foo          -- empty string
-bol/foo/true     -- boolean (true/false)
-bol/foo          -- empty boolean
-```
-
-### Yeast aliases (`.yeast` only)
-
-`bool` = `bol`, `string` = `str`, `func`/`function` = `shrtct`, `@` = `print`
-
-### Print
-
-```
-print/Hello World!   -- print a literal string
-print/foo            -- print a variable
-```
-
-### Input
-
-```
-in/foo    -- read input into string foo (auto-declares if needed)
-```
-
-### Math
-
-```
-add/foo/5    -- foo += 5
-sub/foo/5    -- foo -= 5
-mul/foo/5    -- foo *= 5
-div/foo/5    -- foo /= 5
-mod/foo/5    -- foo %= 5
-```
-
-Yeast only: `add/foo` (foo++) and `sub/foo` (foo--)
-
-### Control Flow
-
-```
-if/foo/equals/bar
-    ...
-endif/
-```
-
-Operators: `equals`, `notequals`, `greater`, `less`
-
-```
-while/foo/equals/10
-    ...
-endwhile/
-```
-
-Or with a bool: `while/var` (loops while var is true)
-
-### Functions (shortcuts)
-
-```
-shrtct/greet
-    print/Hello!
-endshrtct/
-
-greet
-```
-
-Must be defined before use. Cannot take arguments.
-
-### Other
-
-```
-wait/5      -- sleep for 5 seconds
-exit/0      -- exit with code
-exit        -- exit with 0
-```
-
-### Comments (`.yeast` only)
-
-```
-;; this is a comment
-```
-
----
+----
 
 ## Yeast vs Bread
 
 | Feature | Bread | Yeast |
 |---------|-------|-------|
-| Comments | ❌ | ✅ (`;;`) |
+| Variables | ✅ | ✅ |
+| Compilation | ✅ | ✅ |
+| Developer Suite | ✅ | *WIP* |
+| Comments | ❌ | ✅ |
 | `bool` keyword | ❌ | ✅ |
 | `string` keyword | ❌ | ✅ |
 | `func`/`function` keyword | ❌ | ✅ |
@@ -134,6 +49,10 @@ exit        -- exit with 0
 | `add/foo` (++) | ❌ | ✅ |
 | `sub/foo` (--) | ❌ | ✅ |
 | `True`/`False` built-in | ❌ | ✅ |
+| **Raw** C editing | ❌ | ✅ |
+
+Literally does everything bread can **+ more**
+Also, note that Yeast *is backwards compatible by design*. To force bread, rename your file from ``example.yeast`` to ``example.bread``, *or* use the compiler's ``--force-bread`` flag. 
 
 ---
 

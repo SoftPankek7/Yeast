@@ -33,15 +33,31 @@ def error(string) -> None:
 	print(string)
 	exit(67420)
 
+def _help():
+	print(f"""Yeast v{version} Help
+
+Flags:
+	   -o=            | Set output file
+	   --keep-c       | Keep the source file (C source code)
+	   --comp=        | Set compiler (rather than auto-select it)
+	   --force-yeast  | Force yeast options - dont auto-detect it
+	   --force-bread  | Force bread options - dont auto-detect it
+Deafults:
+	   -o=output      | Save to ./output
+	   --keep-c       | False""")
+
 if len(sys.argv) < 2:
     error("Usage: python main.py <file> [options]")
 
 ___settings["inputFile"] = sys.argv[1]
 
 for i in sys.argv[2:]:
-	if i.startswith("-o="):
+	if i == "--help":
+		_help()
+		exit(0)
+	elif i.startswith("-o="):
 		___settings["outputFile"] = i[len("-o="):]
-	elif i == "--keep-temp-c":
+	elif i == "--keep-c":
 		___settings["keepTempC"] = True
 	elif i.startswith("--comp="):
 		___settings["forceComp"] = i[len("--comp="):]
@@ -65,6 +81,9 @@ def to_c(string) -> str:
 
 	command = _string[0]
 	args    = _string[1:]
+
+	if command == "\\":
+		return args[0]
 
 	if len(args) == 0:
 		arg = ""
