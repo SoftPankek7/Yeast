@@ -22,13 +22,6 @@ _funcs = []
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-if ___settings["forceBread"]:
-	__is_yeast = False
-elif ___settings["forceYeast"]:
-	__is_yeast = True
-else:
-	__is_yeast = ___settings["inputFile"].endswith(".yeast")
-
 def error(string) -> None:
 	print(string)
 	exit(67420)
@@ -68,6 +61,13 @@ for i in sys.argv[2:]:
 	else:
 		error(f"Unknown argument '{i}'")
 
+if ___settings["forceBread"]:
+	__is_yeast = False
+elif ___settings["forceYeast"]:
+	__is_yeast = True
+else:
+	__is_yeast = ___settings["inputFile"].endswith(".yeast")
+
 def __file2abs_dir(file) -> str:
 	expanded = os.path.expanduser(file)
 	absolute = os.path.abspath(expanded)
@@ -83,7 +83,7 @@ def to_c(string) -> str:
 	args    = _string[1:]
 
 	if command == "\\":
-		return args[0]
+		return string[1:]
 
 	if len(args) == 0:
 		arg = ""
