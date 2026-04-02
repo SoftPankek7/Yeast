@@ -19,7 +19,6 @@ ___settings = {
 
 _vars = {}
 _funcs = []
-_loop_num = 0
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
@@ -180,9 +179,6 @@ def to_c(string) -> str | None:
 		case "endwhile":
 			return '}'
 		case "add":
-			# add / xxx / 1
-			# cmd / arg / args[1]
-
 			if len(args) == 1:
 				if not __is_yeast:
 					error("Compiler Error: Only 2 add arguments, "+str(command))
