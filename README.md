@@ -1,3 +1,5 @@
+![Yeast Logo](docs/logo.png)
+
 # Yeast
 
 A faster, better, and more generally improved version of [Bread programming language](https://github.com/angrypig555/bread).
