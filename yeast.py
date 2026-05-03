@@ -45,7 +45,10 @@ if len(sys.argv) < 2:
 
 ___settings["inputFile"] = sys.argv[1]
 
-for i in sys.argv[2:]:
+for i in sys.argv[1:]:
+	if os.path.isfile(i): continue
+	if os.path.isdir(i): continue
+
 	if i == "--help":
 		_help()
 		exit(0)
@@ -85,7 +88,7 @@ def to_c(string) -> Optional[str]:
 	command = _string[0]
 	args    = _string[1:]
 
-	if command == "\\":
+	if command.startswith("\\"):
 		return string[1:]
 
 	if len(args) == 0:
@@ -249,6 +252,21 @@ def to_c(string) -> Optional[str]:
 		case "endshrtct":
 			return "§}"
 		
+		case "createdir":
+			if arg == "":
+				___to_c_err("directory must have a name")
+			return f'createdir("{arg}");'
+		
+		case "deldir":
+			if arg == "":
+				___to_c_err("directory must have a name")
+			return f'deldir("{arg}");'
+
+		case "forcedeletedir":
+			if arg == "":
+				___to_c_err("directory must have a name")
+			return f'force_deldir("{arg}");'
+
 		case "loop":
 			if not __is_yeast:
 				___to_c_err(command)
@@ -271,17 +289,17 @@ def gen_boilerplate(path):
 	with open(path, "wt") as source:
 		source.write("""
 */
-         @=@        
-       @@,.,@       
-      @.,.,.,@       
-     @@,.,.,.@@     
-     @,.,.,.,.@@    
-    @,.,.,.,.,.,@   
+         @=@
+       @@,.,@
+      @.,.,.,@
+     @@,.,.,.@@
+     @,.,.,.,.@@
+    @,.,.,.,.,.,@
 @@@@,.,.,.,.,.,.@@@@
 @@@,.,.,.,.,.,.,.,@@
 @*=@@@@@@@@@@@@@@@:@
  @@+-.*+:::.    :@@ 
-   @@@@@@+@@@@@@@
+   @@@@@@@@@@@@@@
        
 	   Yeast
 /*
@@ -423,6 +441,7 @@ def _inter_compiler(file):
 def _compile_file(path, out):
 	gen_boilerplate(out)
 	
+	_loop_num  = 0
 	func_lines = []
 	main_lines = []
 
@@ -431,7 +450,13 @@ def _compile_file(path, out):
 			main_lines.append(to_c("bool/True/true"))
 			main_lines.append(to_c("bool/False/false"))
 
+		lineNum = 0
+
 		for line in _input_file:
+			lineNum += 1
+
+			print(f"Info: {lineNum} | {line.strip()}")
+
 			if ";;" in line: # See CHANGES.md
 				line = line.split(";;", 1)[0]
 			if line.strip() == "":
@@ -460,7 +485,7 @@ def _compile_file(path, out):
 		_output_file.write("return 0;\n}\n")
 
 if __name__ == "__main__":
-	print(f"Yeast v{version}")
+	print(f"{'Yeast' if __is_yeast else 'Bread'} v{version} on {'Windows' if os.name == "nt" else 'Linux/Mac'}")
 	try:
 		_compile_file(___settings["inputFile"], "tmp.c")
 		_inter_compiler("tmp.c")

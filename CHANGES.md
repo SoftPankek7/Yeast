@@ -1,10 +1,17 @@
 # The Yeast Programming Language Changes
 
-#### For: Version 1.0.2a
+#### For: Version 1.0.2b
 
 ----
 
-- Custom header amped to version 3.
-- Added experimental filesystem APIs (soon to be implimented, dont worry)
-- Added credits in compiled binaries (please dont remove, it violates the MIT license and my happiness)
-- Added yeast ascii logo to C source code
+- Actually added/implemented use of createdir/deldir/forcedeletedir
+- Shows what is being compiled in real time
+- Modified the yeast ascii art a bit
+- Changed version overview when running to mode, version and platform
+
+----
+
+## Fixed Bugs
+
+- Fragile loop system fixed
+- Fixed command line arguments being \[very\] pickly
