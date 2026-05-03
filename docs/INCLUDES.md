@@ -4,7 +4,7 @@
 
 ## General Warnings
 
-> [!INFO]
+> [!NOTE]
 > Planned for v1.1.0+
 > ***Do not*** expect any of this (especially yeast headers) to be **1:1 or implemented in the final version**.
 > Also, ***do not*** expect this to appear on v1.1.0 specifically.
@@ -37,7 +37,7 @@ In the compiler, this unrolls to:
 #include <lib.h>
 ```
 
-> [!INFO]
+> [!NOTE]
 > Please note that ``.h`` is intentionally hardcoded - and disallows any ``.hpp`` files.
 
 ----
@@ -69,7 +69,7 @@ In the compiler, this unrolls to:
 #include "lib.h"
 ```
 
-> [!INFO]
+> [!NOTE]
 > Please note that ``.h`` is intentionally hardcoded - and disallows any ``.hpp`` files.
 
 ----
@@ -104,5 +104,5 @@ In the compiler, this unrolls to:
 > This then makes the yeast header get compiled & generate headers.
 > Then, it references it as a header internally, as seen above with ``#include <lib.h>``
 
-> [!INFO]
+> [!NOTE]
 > Please note that ``.yeast`` is intentionally hardcoded - and disallows any ``.bread`` files.
