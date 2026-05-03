@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-version = "1.0.1"
+version = "1.0.2"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp.c for future use
@@ -270,6 +270,21 @@ def ___to_c_err(string):
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
 		source.write("""
+*/
+         @=@        
+       @@,.,@       
+      @.,.,.,@       
+     @@,.,.,.@@     
+     @,.,.,.,.@@    
+    @,.,.,.,.,.,@   
+@@@@,.,.,.,.,.,.@@@@
+@@@,.,.,.,.,.,.,.,@@
+@*=@@@@@@@@@@@@@@@:@
+ @@+-.*+:::.    :@@ 
+   @@@@@@+@@@@@@@
+       
+	   Yeast
+/*
 // Generated with the Yeast Programming Language
 // https://github.com/SoftPankek7/Yeast.
 //
@@ -280,6 +295,8 @@ def gen_boilerplate(path):
 // This includes the compiler, generated header, and anything originating from the repository.
 
 #include "yeast.h"
+__attribute__((used)) static const char * _credit="Made by Yeast (see https://github.com/SoftPankek7/Yeast)"; // Dont feel bad, all the best things in life are free.
+
 """)
 	
 	with open(f"{__file2abs_dir(path)}{___path_sep}yeast.h", "wt") as header:
@@ -290,7 +307,8 @@ def gen_boilerplate(path):
 // The whole project is MIT Licensed!!!
 // This includes the compiler, generated header, and anything originating from the repository.
 
-// Header v2
+// Made for Yeast v1.0.2 (Backwards compatible)
+// Header v3
 
 #ifndef YEAST_RUNTIME_H
 #define YEAST_RUNTIME_H
@@ -299,15 +317,60 @@ def gen_boilerplate(path):
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <string.h>
 
 typedef char* string;
 
 #define print_str(x)  printf("%s\\n", x);
 #define print_int(x)  printf("%d\\n", x);
 #define print_bol(x)  printf("%d\\n", x);
-
 #define input(x)      fgets(x, 65536, stdin);
 #define wait(x)       sleep(x);
+
+// Filesystem support
+
+#define deldir(x)    remove(x);
+
+#ifdef _WIN32
+	// Windows Support
+    #include <direct.h>
+    #define createdir(path) _mkdir(path)
+#else
+    #include <sys/stat.h>
+    #include <sys/types.h>
+    #define createdir(path) mkdir(path, 0755)
+#endif
+
+// Caution: force_deldir does not work on windows.
+//          Will fix probably soon. But, no promises.
+			   
+static int force_deldir(const char *path) {
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+
+    if (!dir) {
+        return remove(path);
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char buf[1024];
+        snprintf(buf, sizeof(buf), "%s/%s", path, entry->d_name);
+        struct stat st;
+        if (stat(buf, &st) == 0) {
+            if (S_ISDIR(st.st_mode)) { force_deldir(buf);
+            } else {                   remove(buf);       }
+        }
+    }
+    closedir(dir);
+    return remove(path);
+}
 
 #endif
 """)
