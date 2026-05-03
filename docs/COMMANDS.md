@@ -4,11 +4,11 @@
 
 ### Compilation Process
 
-Bread is transpiled into c++, and compiled from there with g++/clang.
+Bread is transpiled into c, and compiled from there with gcc/clang.
 
 So, the stack would be:
 
-``uncompiled.yeast -> yeast.py -> g++/clang -> ./compiled.out``
+``uncompiled.yeast -> yeast.py -> gcc/clang -> ./compiled.out``
 
 
 -----

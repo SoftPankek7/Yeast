@@ -4,7 +4,7 @@
 
 <h1 align="center">Yeast</h1>
 
-A faster, better, and more generally improved version of [Bread programming language](https://github.com/angrypig555/bread).
+A faster, better, and more generally improved version of the [Bread programming language](https://github.com/angrypig555/bread).
 
 > Also, instead of **C++** (that Bread compiles to), **Yeast compiles to C**.
 ----
