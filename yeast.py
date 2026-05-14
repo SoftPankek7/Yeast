@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-version = "1.0.2"
+version = "1.0.3"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp.c for future use
@@ -142,7 +142,7 @@ def to_c(string) -> Optional[str]:
 			if len(args) == 1:
 				return f'string {arg};'
 			elif len(args) == 2:
-				return f'string {args[0]} = {args[1]};'
+				return f'string {args[0]} = "{args[1]}";'
 			else:
 				___to_c_err("Only 1-2 str/string arguments, "+str(command))
 		case "exit":
