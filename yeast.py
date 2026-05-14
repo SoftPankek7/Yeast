@@ -288,7 +288,7 @@ def ___to_c_err(string):
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
 		source.write("""
-*/
+/*
          @=@
        @@,.,@
       @.,.,.,@
@@ -302,7 +302,7 @@ def gen_boilerplate(path):
    @@@@@@@@@@@@@@
        
 	   Yeast
-/*
+*/
 // Generated with the Yeast Programming Language
 // https://github.com/SoftPankek7/Yeast.
 //
