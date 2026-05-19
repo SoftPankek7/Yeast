@@ -13,7 +13,9 @@ __pycache__/
 
 .vscode/
 
-example.yeast
-example.bread
-
 \.\.\.
+
+example*.yeast
+example*.bread
+tmp.c
+yeast.h
