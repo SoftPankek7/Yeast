@@ -1,10 +1,11 @@
 # Yeast - an improved bread transpiler, rewritten in Python
-import os
-import shutil
 import subprocess
+import argparse
+import shutil
 import sys
+import os
 
-version = "1.0.4"
+version = "1.0.5"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp.c for future use
@@ -26,42 +27,59 @@ def error(string):
 	print(string)
 	exit(67420)
 
-def _help():
-	print(f"""Yeast v{version} Help
+parser = argparse.ArgumentParser(
+	prog="yeast",
+	description="Yeast - an improved Bread transpiler"
+)
 
-Flags:
-	   -o=            | Set output file
-	   --keep-c       | Keep the source file (C source code)
-	   --comp=        | Set/remove compiler (rather than auto-select it)
-	   --force-yeast  | Force yeast options - dont auto-detect it
-	   --force-bread  | Force bread options - dont auto-detect it
+parser.add_argument(
+	"inputFile",
+	help="Input .yeast/.bread source file"
+)
 
-Deafults:
-	   -o=output      | Save to ./output
-	   --keep-c       | False""")
-	
-	exit(0)
+parser.add_argument(
+	"-o",
+	dest="outputFile",
+	default="output",
+	help="Set output file"
+)
 
+parser.add_argument(
+	"--keep-c",
+	action="store_true",
+	dest="keepTempC",
+	help="Keep the source file (C source code)"
+)
 
-if len(sys.argv) < 2 and "--help" not in sys.argv:
-    error("Usage: python main.py <file> [options]")
+parser.add_argument(
+	"--comp",
+	dest="forceComp",
+	default=False,
+	help="Set/remove compiler (rather than auto-select it)"
+)
 
-___settings["inputFile"] = sys.argv[1]
+parser.add_argument(
+	"--force-yeast",
+	action="store_true",
+	dest="forceYeast",
+	help="Force yeast options - dont auto-detect it"
+)
 
-for i in sys.argv[1:]:
-	if i == "--help":
-		_help()
-		exit(0)
+parser.add_argument(
+	"--force-bread",
+	action="store_true",
+	dest="forceBread",
+	help="Force bread options - dont auto-detect it"
+)
 
-	if os.path.isfile(i): continue
-	if os.path.isdir(i): continue
+args = parser.parse_args()
 
-	elif i.startswith("-o="):     ___settings["outputFile"] = i[len("-o="):]
-	elif i == "--keep-c":         ___settings["keepTempC"] = True
-	elif i.startswith("--comp="): ___settings["forceComp"] = i[len("--comp="):]
-	elif i == "--force-yeast":    ___settings["forceYeast"] = True
-	elif i == "--force-bread":    ___settings["forceBread"] = True
-	else:                         error(f"Unknown argument '{i}'")
+___settings["inputFile"]  = args.inputFile
+___settings["outputFile"] = args.outputFile
+___settings["keepTempC"]  = args.keepTempC
+___settings["forceComp"]  = args.forceComp
+___settings["forceYeast"] = args.forceYeast
+___settings["forceBread"] = args.forceBread
 
 if ___settings["forceBread"]:   __is_yeast = False
 elif ___settings["forceYeast"]: __is_yeast = True

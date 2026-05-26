@@ -7,6 +7,8 @@
 A faster, better, and more generally improved version of the [Bread programming language](https://github.com/angrypig555/bread).
 
 > Also, instead of **C++** (that Bread compiles to), **Yeast compiles to C**.
+
+[See Changes in the newest version](CHANGES.md)
 ----
 
 ## Usage
