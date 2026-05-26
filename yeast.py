@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-version = "1.0.3"
+version = "1.0.4"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp.c for future use
@@ -22,7 +22,7 @@ _funcs = []
 
 ___path_sep  = "\\" if os.name == "nt" else "/"
 
-def error(string) -> None:
+def error(string):
 	print(string)
 	exit(67420)
 
@@ -39,62 +39,54 @@ Flags:
 Deafults:
 	   -o=output      | Save to ./output
 	   --keep-c       | False""")
+	
+	exit(0)
 
-if len(sys.argv) < 2:
-	error("Usage: python main.py <file> [options]")
+
+if len(sys.argv) < 2 and "--help" not in sys.argv:
+    error("Usage: python main.py <file> [options]")
 
 ___settings["inputFile"] = sys.argv[1]
 
 for i in sys.argv[1:]:
-	if os.path.isfile(i): continue
-	if os.path.isdir(i): continue
-
 	if i == "--help":
 		_help()
 		exit(0)
-	elif i.startswith("-o="):
-		___settings["outputFile"] = i[len("-o="):]
-	elif i == "--keep-c":
-		___settings["keepTempC"] = True
-	elif i.startswith("--comp="):
-		___settings["forceComp"] = i[len("--comp="):]
-	elif i == "--force-yeast":
-		___settings["forceYeast"] = True
-	elif i == "--force-bread":
-		___settings["forceBread"] = True
-	else:
-		error(f"Unknown argument '{i}'")
 
-if ___settings["forceBread"]:
-	__is_yeast = False
-elif ___settings["forceYeast"]:
-	__is_yeast = True
-else:
-	__is_yeast = ___settings["inputFile"].endswith(".yeast")
+	if os.path.isfile(i): continue
+	if os.path.isdir(i): continue
 
-def __file2abs_dir(file) -> str:
+	elif i.startswith("-o="):     ___settings["outputFile"] = i[len("-o="):]
+	elif i == "--keep-c":         ___settings["keepTempC"] = True
+	elif i.startswith("--comp="): ___settings["forceComp"] = i[len("--comp="):]
+	elif i == "--force-yeast":    ___settings["forceYeast"] = True
+	elif i == "--force-bread":    ___settings["forceBread"] = True
+	else:                         error(f"Unknown argument '{i}'")
+
+if ___settings["forceBread"]:   __is_yeast = False
+elif ___settings["forceYeast"]: __is_yeast = True
+else:                           __is_yeast = ___settings["inputFile"].endswith(".yeast")
+
+def __file2abs_dir(file):
 	expanded = os.path.expanduser(file)
 	absolute = os.path.abspath(expanded)
 	directory = os.path.dirname(absolute)
 
 	return directory
 
-from typing import Optional
-
-def to_c(string) -> Optional[str]:
+def to_c(string):
 	string = string.strip()
 	_string = string.split("/")
 
 	command = _string[0]
 	args    = _string[1:]
 
-	if command.startswith("\\"):
-		return string[1:]
+	if __is_yeast: # Bread doesnt have arbituary C(++)
+		if command.startswith("\\"):
+			return string[1:]
 
-	if len(args) == 0:
-		arg = ""
-	else:
-		arg = args[0]
+	if len(args) == 0: arg = ""
+	else:              arg = args[0]
 
 	if __is_yeast: # Speeds up non-yeast compile time by a bit
 		if command == "bool": # Bread doesnt like bool, it wants bol.
@@ -111,179 +103,175 @@ def to_c(string) -> Optional[str]:
 			command = "mod"
 		elif command == "func" or command == "function":
 			command = "shrtct"
+		elif command == "endfunc" or command == "endfunction":
+			command = "endshrtct"
 
-	match command:
-		case "print":
-			if arg in _vars:
-				return f'print_{_vars[arg]}({arg});'
-			else:
-				return f'print_str("{arg}");'
-		case "in":
-			_vars[arg] = "str"
-			return f'input({arg});'
-		case  "int":
-			_vars[arg] = "int"
-			if len(args) == 1:
-				return f'int {arg};'
-			elif len(args) == 2:
-				return f'int {args[0]} = {args[1]};'
-			else:
-				___to_c_err("Only 1-2 int arguments, "+str(command))
-		case "bol":
-			_vars[arg] = "bol"
-			if len(args) == 1:
-				return f'bool {arg};'
-			elif len(args) == 2:
-				return f'bool {args[0]} = {args[1]};'
-			else:
-				___to_c_err("Only 1-2 bol/bool arguments, "+str(command))
-		case "str":
-			_vars[arg] = "str"
-			if len(args) == 1:
-				return f'string {arg};'
-			elif len(args) == 2:
-				return f'string {args[0]} = "{args[1]}";'
-			else:
-				___to_c_err("Only 1-2 str/string arguments, "+str(command))
-		case "exit":
-			if len(args) == 1:
-				return f'exit({arg});'
-			elif len(args) == 0:
-				return f'exit(0);'
-			else:
-				___to_c_err("Only 0-1 exit arguments, "+str(command))
-		case "if":
-			if len(args) != 3:
-				___to_c_err("if requires 3 arguments, "+str(command))
+	cmd = command # shorthand to keep this simpler
+
+	if cmd == "print":
+		if arg in _vars: return f"print_{_vars[arg]}({arg});"
+		else:            return f'print_str("{arg}");'
+	elif cmd == "in":
+		_vars[arg] = "str"
+		return f"input({arg});"
+	elif cmd ==  "int":
+		_vars[arg] = "int"
+		if len(args) == 1:
+			return f"int {arg};"
+		elif len(args) == 2:
+			return f"int {args[0]} = {args[1]};"
+		else:
+			___to_c_err("Only 1-2 int arguments, "+str(command))
+	elif cmd == "bol":
+		_vars[arg] = "bol"
+		if len(args) == 1:
+			return f"bool {arg};"
+		elif len(args) == 2:
+			return f"bool {args[0]} = {args[1]};"
+		else:
+			___to_c_err("Only 1-2 bol/bool arguments, "+str(command))
+	elif cmd == "str":
+		_vars[arg] = "str"
+		if len(args) == 1:
+			return f"string {arg};"
+		elif len(args) == 2:
+			return f'string {args[0]} = "{args[1]}";'
+		else:
+			___to_c_err("Only 1-2 str/string arguments, "+str(command))
+	elif cmd == "exit":
+		if len(args) == 1:
+			return f"exit({arg});"
+		elif len(args) == 0:
+			return f"exit(0);"
+		else:
+			___to_c_err("Only 0-1 exit arguments, "+str(command))
+	elif cmd == "if":
+		if len(args) != 3:
+			___to_c_err("if requires 3 arguments, "+str(command))
+		ops = {"equals": "==", "notequals": "!=", "greater": ">", "less": "<"}
+		if args[1] not in ops:
+			___to_c_err(f"Unknown operator '{args[1]}'")
+		op = ops[args[1]]
+		return f"if ({args[0]} {op} {args[2]}) {{"
+	elif cmd == "else":
+		if __is_yeast:   return "} else {"
+		else:            ___to_c_err(command,"is not in bread.")
+	elif cmd == "endif": return "}"
+	elif cmd == "while":
+		if len(args) == 1:
+			if arg not in _vars or _vars[arg] != "bol":
+				___to_c_err(f"'{arg}' is not a bool")
+			return f"while ({arg}) {{"
+		elif len(args) == 3:
 			ops = {"equals": "==", "notequals": "!=", "greater": ">", "less": "<"}
 			if args[1] not in ops:
 				___to_c_err(f"Unknown operator '{args[1]}'")
 			op = ops[args[1]]
-			return f'if ({args[0]} {op} {args[2]}) {{'
-		case "else":
-			if __is_yeast:
-				return "} else {"
-			else:
-				___to_c_err(command)
-		case "endif":
-			return "}"
-		case "while":
-			if len(args) == 1:
-				if arg not in _vars or _vars[arg] != "bol":
-					___to_c_err(f"'{arg}' is not a bool")
-				return f'while ({arg}) {{'
-			elif len(args) == 3:
-				ops = {"equals": "==", "notequals": "!=", "greater": ">", "less": "<"}
-				if args[1] not in ops:
-					___to_c_err(f"Unknown operator '{args[1]}'")
-				op = ops[args[1]]
-				return f'while ({args[0]} {op} {args[2]}) {{'
-			else:
-				___to_c_err("while takes 1 or 3 arguments")
-		case "endwhile":
-			return '}'
-		case "add":
-			if len(args) == 1:
-				if not __is_yeast:
-					___to_c_err("Only 2 add arguments, "+str(command))
-				else:
-					return f'{arg}++;'
-			elif len(args) == 2:
-				if arg in _vars and _vars[arg] == "int":
-					return f'{arg} += {args[1]};'
-				else:
-					___to_c_err("Cannot add non-ints (or nonexistants!), "+str(command))
-			else:
-				___to_c_err("Only 1-2 add arguments, "+str(command))
-		case "sub":
-			if len(args) == 1:
-				if not __is_yeast:
-					___to_c_err("Only 2 subtract arguments, "+str(command))
-				else:
-					return f'{arg}--;'
-			elif len(args) == 2:
-				if arg in _vars and _vars[arg] == "int":
-					return f'{arg} -= {args[1]};'
-				else:
-					___to_c_err("Cannot subtract non-ints (or nonexistants!), "+str(command))
-			else:
-				___to_c_err("Only 1-2 sub/subtract arguments, "+str(command))
-		case "mul":
-			if len(args) == 1:
-				___to_c_err("Only 2 mul arguments, "+str(command))
-			elif len(args) == 2:
-				if arg in _vars and _vars[arg] == "int":
-					return f'{arg} *= {args[1]};'
-				else:
-					___to_c_err("Cannot mul non-ints (or nonexistants!), "+str(command))
-			else:
-				___to_c_err("Only 1-2 mul/multiply arguments, "+str(command))
-		case "div":
-			if len(args) == 1:
-				___to_c_err("Only 2 div arguments, "+str(command))
-			elif len(args) == 2:
-				if arg in _vars and _vars[arg] == "int":
-					return f'{arg} /= {args[1]};'
-				else:
-					___to_c_err("Cannot div non-ints (or nonexistants!), "+str(command))
-			else:
-				___to_c_err("Only 1-2 div/divide arguments, "+str(command))
-		case "mod":
-			if len(args) == 1:
-				___to_c_err("Only 2 mod arguments, "+str(command))
-			elif len(args) == 2:
-				if arg in _vars and _vars[arg] == "int":
-					return f'{arg} = {arg} % {args[1]};'
-				else:
-					___to_c_err("Cannot mod non-ints (or nonexistants!), "+str(command))
-			else:
-				___to_c_err("Only 1-2 mod/modulus arguments, "+str(command))
-		case "wait":
-			if arg in _vars or arg.isdigit():
-				return f'wait({arg});'
-			else:
-				___to_c_err("Only 1 wait argument, "+str(command))
-		case "shrtct":
-			if arg == "":
-				___to_c_err("shortcut must have a name")
-			_funcs.append(arg)
-			return f"§void {arg}() {{"  # § prefix = goes to func buffer, not main
-
-		case "endshrtct":
-			return "§}"
-		
-		case "createdir":
-			if arg == "":
-				___to_c_err("directory must have a name")
-			return f'createdir("{arg}");'
-		
-		case "deldir":
-			if arg == "":
-				___to_c_err("directory must have a name")
-			return f'deldir("{arg}");'
-
-		case "forcedeletedir":
-			if arg == "":
-				___to_c_err("directory must have a name")
-			return f'force_deldir("{arg}");'
-
-		case "loop":
+			return f"while ({args[0]} {op} {args[2]}) {{"
+		else:
+			___to_c_err("while takes 1 or 3 arguments")
+	elif cmd == "endwhile": return "}"
+	elif cmd == "add":
+		if len(args) == 1:
 			if not __is_yeast:
-				___to_c_err(command)
-				
-			if not arg.isdigit():
-				___to_c_err("loop requires a number")
-			if len(args) < 2:
-				___to_c_err("loop requires a command")
-			inner = to_c("/".join(args[1:]))
-			return "\n".join([inner] * int(arg))
-		case _:
-			if string.strip() in _funcs:
-				return f"{string.strip()}();"
-			___to_c_err(f"Unknown command '{command}'")
+				___to_c_err("Only 2 add arguments, "+str(command))
+			else:
+				return f"{arg}++;"
+		elif len(args) == 2:
+			if arg in _vars and _vars[arg] == "int":
+				return f"{arg} += {args[1]};"
+			else:
+				___to_c_err("Cannot add non-ints (or nonexistants!), "+str(command))
+		else:
+			___to_c_err("Only 1-2 add arguments, "+str(command))
+	elif cmd == "sub":
+		if len(args) == 1:
+			if not __is_yeast:
+				___to_c_err("Only 2 subtract arguments, "+str(command))
+			else:
+				return f"{arg}--;"
+		elif len(args) == 2:
+			if arg in _vars and _vars[arg] == "int":
+				return f"{arg} -= {args[1]};"
+			else:
+				___to_c_err("Cannot subtract non-ints (or nonexistants!), "+str(command))
+		else:
+			___to_c_err("Only 1-2 sub/subtract arguments, "+str(command))
+	elif cmd == "mul":
+		if len(args) == 1:
+			___to_c_err("Only 2 mul arguments, "+str(command))
+		elif len(args) == 2:
+			if arg in _vars and _vars[arg] == "int":
+				return f"{arg} *= {args[1]};"
+			else:
+				___to_c_err("Cannot mul non-ints (or nonexistants!), "+str(command))
+		else:
+			___to_c_err("Only 1-2 mul/multiply arguments, "+str(command))
+	elif cmd == "div":
+		if len(args) == 1:
+			___to_c_err("Only 2 div arguments, "+str(command))
+		elif len(args) == 2:
+			if arg in _vars and _vars[arg] == "int":
+				return f"{arg} /= {args[1]};"
+			else:
+				___to_c_err("Cannot div non-ints (or nonexistants!), "+str(command))
+		else:
+			___to_c_err("Only 1-2 div/divide arguments, "+str(command))
+	elif cmd == "mod":
+		if len(args) == 1:
+			___to_c_err("Only 2 mod arguments, "+str(command))
+		elif len(args) == 2:
+			if arg in _vars and _vars[arg] == "int":
+				return f"{arg} = {arg} % {args[1]};"
+			else:
+				___to_c_err("Cannot mod non-ints (or nonexistants!), "+str(command))
+		else:
+			___to_c_err("Only 1-2 mod/modulus arguments, "+str(command))
+
+	elif cmd == "wait":
+		if arg in _vars or arg.isdigit(): return f"wait({arg});"
+		else:                             ___to_c_err("Only 1 wait argument, "+str(command))
+
+	elif cmd == "shrtct":
+		if arg == "": ___to_c_err("shortcut must have a name")
+
+		_funcs.append(arg)
+		return f"§void {arg}() {{"  # § prefix = goes to func buffer, not main
+
+	elif cmd == "endshrtct": return "§}"
+	
+	elif cmd == "createdir":
+		if arg == "":
+			___to_c_err("directory must have a name")
+		return f'createdir("{arg}");'
+	
+	elif cmd == "deldir":
+		if arg == "":
+			___to_c_err("directory must have a name")
+		return f'deldir("{arg}");'
+
+	elif cmd == "forcedeletedir":
+		if arg == "":
+			___to_c_err("directory must have a name")
+		return f'force_deldir("{arg}");'
+
+	elif cmd == "loop":
+		if not __is_yeast:
+			___to_c_err(command,"is not in bread.")
+			
+		if not arg.isdigit():
+			___to_c_err("loop requires a number")
+		if len(args) < 2:
+			___to_c_err("loop requires a command")
+		inner = to_c("/".join(args[1:]))
+		return "\n".join([inner] * int(arg))
+	else:
+		if string.strip() in _funcs:
+			return f"{string.strip()}();"
+		___to_c_err("Unknown command '"+command+"'")
 
 def ___to_c_err(string):
-	error(f"Compiler Error: {string}")
+	error("Compiler Error:",string)
 
 def gen_boilerplate(path):
 	with open(path, "wt") as source:
@@ -317,7 +305,7 @@ __attribute__((used)) static const char * _credit="Made by Yeast (see https://gi
 
 """)
 	
-	with open(f"{__file2abs_dir(path)}{___path_sep}yeast.h", "wt") as header:
+	with open(__file2abs_dir(path)+___path_sep+"yeast.h", "wt") as header:
 		header.write("""
 // Generated with the Yeast Programming Language
 // https://github.com/SoftPankek7/Yeast. Based on the Bread programming language, see:
@@ -341,54 +329,110 @@ __attribute__((used)) static const char * _credit="Made by Yeast (see https://gi
 
 typedef char* string;
 
-#define print_str(x)  printf("%s\\n", x);
-#define print_int(x)  printf("%d\\n", x);
-#define print_bol(x)  printf("%d\\n", x);
-#define input(x)      fgets(x, 65536, stdin);
-#define wait(x)       sleep(x);
+#define print_str(x)  printf("%s\n", x)
+#define print_int(x)  printf("%d\n", x)
+#define print_bol(x)  printf("%d\n", x)
+#define input(x)      fgets(x, 65536, stdin)
+#define wait(x)       sleep(x)
 
 // Filesystem support
-
-#define deldir(x)    remove(x);
+			   
+#define deldir(x)     remove(x)
 
 #ifdef _WIN32
-	// Windows Support
-    #include <direct.h>
-    #define createdir(path) _mkdir(path)
+#include <direct.h>
+#define createdir(path) _mkdir(path)
 #else
-    #include <sys/stat.h>
-    #include <sys/types.h>
-    #define createdir(path) mkdir(path, 0755)
+#include <sys/types.h>
+#define createdir(path) mkdir(path, 0755)
 #endif
 
-// Caution: force_deldir does not work on windows.
-//          Will fix probably soon. But, no promises.
-			   
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+static int force_deldir(const char *path) {
+    char search[MAX_PATH * 4];
+    WIN32_FIND_DATAA fd;
+    HANDLE hFind;
+
+    if (snprintf(search, sizeof(search), "%s\\*", path) >= (int)sizeof(search)) {return -1;}
+
+    hFind = FindFirstFileA(search, &fd);
+    if (hFind == INVALID_HANDLE_VALUE) {return RemoveDirectoryA(path) ? 0 : -1;}
+
+    for (;;) {
+        if (strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0) {
+            char child[MAX_PATH * 4];
+            if (snprintf(child, sizeof(child), "%s\\%s", path, fd.cFileName) >= (int)sizeof(child)) {
+                FindClose(hFind);
+                return -1;
+            }
+
+            if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                if (force_deldir(child) != 0) {
+                    FindClose(hFind);
+                    return -1;
+                }
+            } else {
+                if (fd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) {
+                    if (!SetFileAttributesA(child, FILE_ATTRIBUTE_NORMAL)) {
+                        FindClose(hFind);
+                        return -1;
+                    }
+                }
+                if (!DeleteFileA(child)) {
+                    FindClose(hFind);
+                    return -1;
+                }
+            }
+        }
+
+        if (!FindNextFileA(hFind, &fd)) {
+            if (GetLastError() != ERROR_NO_MORE_FILES) {
+                FindClose(hFind);
+                return -1;
+            }
+            break;
+        }
+    }
+
+    FindClose(hFind);
+    return RemoveDirectoryA(path) ? 0 : -1;
+}
+#else
 static int force_deldir(const char *path) {
     DIR *dir = opendir(path);
     struct dirent *entry;
 
-    if (!dir) {
-        return remove(path);
-    }
+    if (!dir) { return remove(path); }
 
     while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 ||
-            strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {continue;}
 
         char buf[1024];
         snprintf(buf, sizeof(buf), "%s/%s", path, entry->d_name);
+
         struct stat st;
         if (stat(buf, &st) == 0) {
-            if (S_ISDIR(st.st_mode)) { force_deldir(buf);
-            } else {                   remove(buf);       }
+            if (S_ISDIR(st.st_mode)) {
+                if (force_deldir(buf) != 0) {
+                    closedir(dir);
+                    return -1;
+                }
+            } else {
+                if (remove(buf) != 0) {
+                    closedir(dir);
+                    return -1;
+                }
+            }
         }
     }
+
     closedir(dir);
     return remove(path);
 }
+#endif
 
 #endif
 """)
@@ -397,41 +441,53 @@ def _get_compiler():
 	if ___settings["forceComp"] == False:
 		if shutil.which("gcc"):
 			return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+		
 		elif shutil.which("cc"):
 			return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+		
 		elif shutil.which("cl"):
 			return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+		
 		elif shutil.which("eccp"):
 			return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+		
 		elif shutil.which("ibm-clang"):
 			return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs - if you know how to use it & this is wrong, shoot a PR
+		
 		elif shutil.which("clang"):
 			return ["clang", "tmp.c", "-o", ___settings["outputFile"]]
+		
 		else:
 			___to_c_err("No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
 	else:
-		match ___settings["forceComp"].lower():
-			case "gcc":
-				return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
-			case "cc":
-				return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
-			case "cl":
-				return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
-			case "eccp":
-				return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
-			case "ibm-clang":
-				return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs
-			case "clang":
-				return ["clang", "tmp.c", "-o", ___settings["outputFile"]]     # Anything but clang
-			case "dont":
-				___settings["keepTempC"] = True
-				return [sys.executable, "-c", "pass"]
-			case _:
-				___to_c_err("Forced compiler is not availible.")
+		if ___settings["forceComp"].lower() ==  "gcc":
+			return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+		
+		elif ___settings["forceComp"].lower() ==  "cc":
+			return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+		
+		elif ___settings["forceComp"].lower() ==  "cl":
+			return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+		
+		elif ___settings["forceComp"].lower() ==  "eccp":
+			return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+		
+		elif ___settings["forceComp"].lower() ==  "ibm-clang":
+			return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs
+		
+		elif ___settings["forceComp"].lower() ==  "clang":
+			return ["clang", "tmp.c", "-o", ___settings["outputFile"]]     # Anything but clang
+		
+		elif ___settings["forceComp"].lower() ==  "dont":
+			___settings["keepTempC"] = True
+			return [sys.executable, "-c", "pass"]
+		
+		else:
+			___to_c_err("Forced compiler is not availible.")
 
 	return []
 
-def _inter_compiler(file):
+def _inter_compiler():
 	result = subprocess.run(_get_compiler(), capture_output=True, text=True)
 	if result.returncode != 0:
 		print(result.stdout)
@@ -445,7 +501,7 @@ def _compile_file(path, out):
 	func_lines = []
 	main_lines = []
 
-	with open(path, 'rt') as _input_file:
+	with open(path, "rt") as _input_file:
 		if __is_yeast:
 			main_lines.append(to_c("bool/True/true"))
 			main_lines.append(to_c("bool/False/false"))
@@ -488,8 +544,8 @@ if __name__ == "__main__":
 	print(f"{'Yeast' if __is_yeast else 'Bread'} v{version} on {'Windows' if os.name == "nt" else 'Linux/Mac'}")
 	try:
 		_compile_file(___settings["inputFile"], "tmp.c")
-		_inter_compiler("tmp.c")
+		_inter_compiler()
 	finally:
-		if os.path.exists("tmp.c"):
-			if not ___settings["keepTempC"]:
+		if not ___settings["keepTempC"]:
+			if os.path.exists("tmp.c"):
 				os.remove("tmp.c")

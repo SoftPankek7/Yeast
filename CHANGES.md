@@ -1,17 +1,24 @@
 # The Yeast Programming Language Changes
 
-#### For: Version 1.0.3
+#### For: Version 1.0.4
 
 ----
 
-<!-- - Actually added/implemented use of createdir/deldir/forcedeletedir
-- Shows what is being compiled in real time
-- Modified the yeast ascii art a bit
-- Changed version overview when running to mode, version and platform -->
+## Added Features
+
+- Removed match/case to allow running on python 3.6+, not just 3.10+ (F-strings are going next)
+- Allows ``forcedeletedir`` to work on windows!
 
 ----
 
-## Fixed Bugs
+## Fixed Bugs / Enhancements
 
-- Fixed Yeast logo header - multiline comments where incorrect
-- Fixed string generation - previous ignored any ``"``.
+- Removed some return notations to compact space. This cleaned up on 1 module.
+- Refactored code to make it slightly more readable
+- Allows using --help without an input file.
+- Makes sure you are using yeast when doing arbituary C.
+- Standalized ``"`` over ``'`` in the source code, making it a bit more clean.
+- Fixed a function to not use an arg (it wasnt accessed)
+- Ensured ``_help()`` exited after printing help.
+- Fixed a bug if you have a file in dir named "--help", it wouldnt trigger help.
+- Added macros ``endfunc`` and ``endfunction`` for yeast (I dont know why they werent there)
