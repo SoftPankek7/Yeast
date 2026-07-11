@@ -5,16 +5,18 @@ import shutil
 import sys
 import os
 
-version = "1.0.5"
+version = "1.0.6"
 
 ___settings = {
-	"keepTempC": False, # Whether it should keep tmp.c for future use
+	"keepTempC": False, # Whether it should keep tmp C code for future use
 	"forceComp": False, # Could be a string set to the compiler (GCC, CLANG, CL, ETC.)
 	"forceYeast":False, # Whether it should check if it is yeast or not
 	"forceBread":False, # ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ bread ↑↑↑↑↑↑
 
 	"inputFile": "program.yeast", # ALWAYS a str
-	"outputFile":"output"         # ↑↑↑↑↑↑↑↑↑↑↑↑
+	"outputFile":"output",        # ↑↑↑↑↑↑↑↑↑↑↑↑
+
+	"filename": "program"         # basically the filename, without extension - to replace old "tmp.c"
 }
 
 
@@ -80,6 +82,7 @@ ___settings["keepTempC"]  = args.keepTempC
 ___settings["forceComp"]  = args.forceComp
 ___settings["forceYeast"] = args.forceYeast
 ___settings["forceBread"] = args.forceBread
+___settings["filename"]   = ___settings["inputFile"].split(".")[0]
 
 if ___settings["forceBread"]:   __is_yeast = False
 elif ___settings["forceYeast"]: __is_yeast = True
@@ -456,45 +459,48 @@ static int force_deldir(const char *path) {
 """)
 
 def _get_compiler():
+
+	c_filename = ___settings["filename"]+".c"
+
 	if ___settings["forceComp"] == False:
 		if shutil.which("gcc"):
-			return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+			return ["gcc", c_filename, "-o", ___settings["outputFile"]]
 		
 		elif shutil.which("cc"):
-			return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+			return ["cc", c_filename, "-o", ___settings["outputFile"]]
 		
 		elif shutil.which("cl"):
-			return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"]]
 		
 		elif shutil.which("eccp"):
-			return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"]]
 		
 		elif shutil.which("ibm-clang"):
-			return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs - if you know how to use it & this is wrong, shoot a PR
+			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"]] # I couldnt find any good docs - if you know how to use it & this is wrong, shoot a PR
 		
 		elif shutil.which("clang"):
-			return ["clang", "tmp.c", "-o", ___settings["outputFile"]]
+			return ["clang", c_filename, "-o", ___settings["outputFile"]]
 		
 		else:
 			___to_c_err("No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
 	else:
 		if ___settings["forceComp"].lower() ==  "gcc":
-			return ["gcc", "tmp.c", "-o", ___settings["outputFile"]]
+			return ["gcc", c_filename, "-o", ___settings["outputFile"]]
 		
 		elif ___settings["forceComp"].lower() ==  "cc":
-			return ["cc", "tmp.c", "-o", ___settings["outputFile"]]
+			return ["cc", c_filename, "-o", ___settings["outputFile"]]
 		
 		elif ___settings["forceComp"].lower() ==  "cl":
-			return ["cl", "tmp.c", "/O2", "/Fe" + ___settings["outputFile"]]
+			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"]]
 		
 		elif ___settings["forceComp"].lower() ==  "eccp":
-			return ["eccp", "tmp.c", "-m", "-o", ___settings["outputFile"]]
+			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"]]
 		
 		elif ___settings["forceComp"].lower() ==  "ibm-clang":
-			return ["ibm-clang", "tmp.c", "-o", ___settings["outputFile"]] # I couldnt find any good docs
+			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"]] # I couldnt find any good docs
 		
 		elif ___settings["forceComp"].lower() ==  "clang":
-			return ["clang", "tmp.c", "-o", ___settings["outputFile"]]     # Anything but clang
+			return ["clang", c_filename, "-o", ___settings["outputFile"]]     # Anything but clang
 		
 		elif ___settings["forceComp"].lower() ==  "dont":
 			___settings["keepTempC"] = True
@@ -561,9 +567,9 @@ def _compile_file(path, out):
 if __name__ == "__main__":
 	print(f"{'Yeast' if __is_yeast else 'Bread'} v{version} on {'Windows' if os.name == "nt" else 'Linux/Mac'}")
 	try:
-		_compile_file(___settings["inputFile"], "tmp.c")
+		_compile_file(___settings["inputFile"], ___settings["filename"]+".c")
 		_inter_compiler()
 	finally:
 		if not ___settings["keepTempC"]:
-			if os.path.exists("tmp.c"):
-				os.remove("tmp.c")
+			if os.path.exists(___settings["filename"]+".c"):
+				os.remove(___settings["filename"]+".c")
