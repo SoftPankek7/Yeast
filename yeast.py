@@ -5,20 +5,23 @@ import shutil
 import sys
 import os
 
-version = "1.0.6"
+version = "1.0.7"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp C code for future use
 	"forceComp": False, # Could be a string set to the compiler (GCC, CLANG, CL, ETC.)
 	"forceYeast":False, # Whether it should check if it is yeast or not
 	"forceBread":False, # ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ bread ↑↑↑↑↑↑
+	"compPass": [],     # Compiler passthrough options
 
 	"inputFile": "program.yeast", # ALWAYS a str
 	"outputFile":"output",        # ↑↑↑↑↑↑↑↑↑↑↑↑
 
-	"filename": "program"         # basically the filename, without extension - to replace old "tmp.c"
+	"filename": "program",        # basically the filename, without extension - to replace old "tmp.c"
 }
 
+if sys.argv[1].lower() == "--version": # Actually allows checking the version
+	print(f"Yeast {version}"); exit(0)
 
 _vars = {}
 _funcs = []
@@ -61,6 +64,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+	"--compArg",
+	dest="compArg",
+	default=False,
+	help="Pass through compiler arguments"
+)
+
+parser.add_argument(
 	"--force-yeast",
 	action="store_true",
 	dest="forceYeast",
@@ -83,6 +93,7 @@ ___settings["forceComp"]  = args.forceComp
 ___settings["forceYeast"] = args.forceYeast
 ___settings["forceBread"] = args.forceBread
 ___settings["filename"]   = ___settings["inputFile"].split(".")[0]
+___settings["compPass"]   = args.compArg.split(",")
 
 if ___settings["forceBread"]:   __is_yeast = False
 elif ___settings["forceYeast"]: __is_yeast = True
@@ -322,7 +333,7 @@ def gen_boilerplate(path):
 // This includes the compiler, generated header, and anything originating from the repository.
 
 #include "yeast.h"
-__attribute__((used)) static const char * _credit="Made by Yeast (see https://github.com/SoftPankek7/Yeast)"; // Dont feel bad, all the best things in life are free.
+__attribute__((used)) static const char * _credit="Made by Yeast (see github.com/SoftPankek7/Yeast)"; // Dont feel bad, all the best things in life are free.
 
 """)
 	
@@ -464,47 +475,47 @@ def _get_compiler():
 
 	if ___settings["forceComp"] == False:
 		if shutil.which("gcc"):
-			return ["gcc", c_filename, "-o", ___settings["outputFile"]]
+			return ["gcc", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif shutil.which("cc"):
-			return ["cc", c_filename, "-o", ___settings["outputFile"]]
+			return ["cc", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif shutil.which("cl"):
-			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"]]
+			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif shutil.which("eccp"):
-			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"]]
+			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif shutil.which("ibm-clang"):
-			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"]] # I couldnt find any good docs - if you know how to use it & this is wrong, shoot a PR
+			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]] # I couldnt find any good docs - if you know how to use it & this is wrong, shoot a PR
 		
 		elif shutil.which("clang"):
-			return ["clang", c_filename, "-o", ___settings["outputFile"]]
+			return ["clang", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		else:
-			___to_c_err("No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang")
+			___to_c_err("No compilers found. Compatibles: gcc, cc, cl, eccp, ibm-clang, clang (or, use --forceComp dont)")
 	else:
 		if ___settings["forceComp"].lower() ==  "gcc":
-			return ["gcc", c_filename, "-o", ___settings["outputFile"]]
+			return ["gcc", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif ___settings["forceComp"].lower() ==  "cc":
-			return ["cc", c_filename, "-o", ___settings["outputFile"]]
+			return ["cc", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif ___settings["forceComp"].lower() ==  "cl":
-			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"]]
+			return ["cl", c_filename, "/O2", "/Fe" + ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif ___settings["forceComp"].lower() ==  "eccp":
-			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"]]
+			return ["eccp", c_filename, "-m", "-o", ___settings["outputFile"] + ___settings["compPass"]]
 		
 		elif ___settings["forceComp"].lower() ==  "ibm-clang":
-			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"]] # I couldnt find any good docs
+			return ["ibm-clang", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]] # I couldnt find any good docs
 		
 		elif ___settings["forceComp"].lower() ==  "clang":
-			return ["clang", c_filename, "-o", ___settings["outputFile"]]     # Anything but clang
+			return ["clang", c_filename, "-o", ___settings["outputFile"] + ___settings["compPass"]]     # Anything but clang
 		
 		elif ___settings["forceComp"].lower() ==  "dont":
 			___settings["keepTempC"] = True
-			return [sys.executable, "-c", "pass"]
+			return ["echo", "> Keeping C.."]
 		
 		else:
 			___to_c_err("Forced compiler is not availible.")
