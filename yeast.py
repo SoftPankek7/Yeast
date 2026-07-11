@@ -309,18 +309,18 @@ def gen_boilerplate(path):
 	with open(path, "wt") as source:
 		source.write("""
 /*
-         @=@
-       @@,.,@
-      @.,.,.,@
-     @@,.,.,.@@
-     @,.,.,.,.@@
-    @,.,.,.,.,.,@
+		 @=@
+	   @@,.,@
+	  @.,.,.,@
+	 @@,.,.,.@@
+	 @,.,.,.,.@@
+	@,.,.,.,.,.,@
 @@@@,.,.,.,.,.,.@@@@
 @@@,.,.,.,.,.,.,.,@@
 @*=@@@@@@@@@@@@@@@:@
  @@+-.*+:::.    :@@ 
    @@@@@@@@@@@@@@
-       
+	   
 	   Yeast
 */
 // Generated with the Yeast Programming Language
@@ -384,85 +384,85 @@ typedef char* string;
 #include <windows.h>
 
 static int force_deldir(const char *path) {
-    char search[MAX_PATH * 4];
-    WIN32_FIND_DATAA fd;
-    HANDLE hFind;
+	char search[MAX_PATH * 4];
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind;
 
-    if (snprintf(search, sizeof(search), "%s\\*", path) >= (int)sizeof(search)) {return -1;}
+	if (snprintf(search, sizeof(search), "%s\\*", path) >= (int)sizeof(search)) {return -1;}
 
-    hFind = FindFirstFileA(search, &fd);
-    if (hFind == INVALID_HANDLE_VALUE) {return RemoveDirectoryA(path) ? 0 : -1;}
+	hFind = FindFirstFileA(search, &fd);
+	if (hFind == INVALID_HANDLE_VALUE) {return RemoveDirectoryA(path) ? 0 : -1;}
 
-    for (;;) {
-        if (strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0) {
-            char child[MAX_PATH * 4];
-            if (snprintf(child, sizeof(child), "%s\\%s", path, fd.cFileName) >= (int)sizeof(child)) {
-                FindClose(hFind);
-                return -1;
-            }
+	for (;;) {
+		if (strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0) {
+			char child[MAX_PATH * 4];
+			if (snprintf(child, sizeof(child), "%s\\%s", path, fd.cFileName) >= (int)sizeof(child)) {
+				FindClose(hFind);
+				return -1;
+			}
 
-            if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                if (force_deldir(child) != 0) {
-                    FindClose(hFind);
-                    return -1;
-                }
-            } else {
-                if (fd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) {
-                    if (!SetFileAttributesA(child, FILE_ATTRIBUTE_NORMAL)) {
-                        FindClose(hFind);
-                        return -1;
-                    }
-                }
-                if (!DeleteFileA(child)) {
-                    FindClose(hFind);
-                    return -1;
-                }
-            }
-        }
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				if (force_deldir(child) != 0) {
+					FindClose(hFind);
+					return -1;
+				}
+			} else {
+				if (fd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) {
+					if (!SetFileAttributesA(child, FILE_ATTRIBUTE_NORMAL)) {
+						FindClose(hFind);
+						return -1;
+					}
+				}
+				if (!DeleteFileA(child)) {
+					FindClose(hFind);
+					return -1;
+				}
+			}
+		}
 
-        if (!FindNextFileA(hFind, &fd)) {
-            if (GetLastError() != ERROR_NO_MORE_FILES) {
-                FindClose(hFind);
-                return -1;
-            }
-            break;
-        }
-    }
+		if (!FindNextFileA(hFind, &fd)) {
+			if (GetLastError() != ERROR_NO_MORE_FILES) {
+				FindClose(hFind);
+				return -1;
+			}
+			break;
+		}
+	}
 
-    FindClose(hFind);
-    return RemoveDirectoryA(path) ? 0 : -1;
+	FindClose(hFind);
+	return RemoveDirectoryA(path) ? 0 : -1;
 }
 #else
 static int force_deldir(const char *path) {
-    DIR *dir = opendir(path);
-    struct dirent *entry;
+	DIR *dir = opendir(path);
+	struct dirent *entry;
 
-    if (!dir) { return remove(path); }
+	if (!dir) { return remove(path); }
 
-    while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {continue;}
+	while ((entry = readdir(dir)) != NULL) {
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {continue;}
 
-        char buf[1024];
-        snprintf(buf, sizeof(buf), "%s/%s", path, entry->d_name);
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "%s/%s", path, entry->d_name);
 
-        struct stat st;
-        if (stat(buf, &st) == 0) {
-            if (S_ISDIR(st.st_mode)) {
-                if (force_deldir(buf) != 0) {
-                    closedir(dir);
-                    return -1;
-                }
-            } else {
-                if (remove(buf) != 0) {
-                    closedir(dir);
-                    return -1;
-                }
-            }
-        }
-    }
+		struct stat st;
+		if (stat(buf, &st) == 0) {
+			if (S_ISDIR(st.st_mode)) {
+				if (force_deldir(buf) != 0) {
+					closedir(dir);
+					return -1;
+				}
+			} else {
+				if (remove(buf) != 0) {
+					closedir(dir);
+					return -1;
+				}
+			}
+		}
+	}
 
-    closedir(dir);
-    return remove(path);
+	closedir(dir);
+	return remove(path);
 }
 #endif
 
@@ -584,3 +584,6 @@ if __name__ == "__main__":
 		if not ___settings["keepTempC"]:
 			if os.path.exists(___settings["filename"]+".c"):
 				os.remove(___settings["filename"]+".c")
+		
+		if os.path.exists("yeast.h"):
+			os.remove("yeast.h")
