@@ -93,7 +93,7 @@ ___settings["forceComp"]  = args.forceComp
 ___settings["forceYeast"] = args.forceYeast
 ___settings["forceBread"] = args.forceBread
 ___settings["filename"]   = ___settings["inputFile"].split(".")[0]
-___settings["compPass"]   = args.compArg.split(",")
+if args.compArg: ___settings["compPass"]   = args.compArg.split(",")
 
 if ___settings["forceBread"]:   __is_yeast = False
 elif ___settings["forceYeast"]: __is_yeast = True
@@ -107,14 +107,16 @@ def __file2abs_dir(file):
 	return directory
 
 def to_c(string):
-	string = string.strip()
+	string  = string.strip()
 	_string = string.split("/")
 
 	command = _string[0]
 	args    = _string[1:]
 
 	if __is_yeast: # Bread doesnt have arbituary C(++)
-		if command.startswith("\\"):
+		if command.startswith("\\top/"):
+			return "§"+string[1:]
+		elif command.startswith("\\"):
 			return string[1:]
 
 	if len(args) == 0: arg = ""
@@ -325,7 +327,6 @@ def gen_boilerplate(path):
 */
 // Generated with the Yeast Programming Language
 // https://github.com/SoftPankek7/Yeast.
-//
 // Based on the Bread programming language, see:
 // https://github.com/angrypig555/bread.
 //
@@ -333,19 +334,36 @@ def gen_boilerplate(path):
 // This includes the compiler, generated header, and anything originating from the repository.
 
 #include "yeast.h"
-__attribute__((used)) static const char * _credit="Made by Yeast (see github.com/SoftPankek7/Yeast)"; // Dont feel bad, all the best things in life are free.
+__attribute__((used)) static const char * _credit="Made by Yeast (see github.com/SoftPankek7/Yeast)"; // I just want to be part of your symphony..
 
 """)
 	
 	with open(__file2abs_dir(path)+___path_sep+"yeast.h", "wt") as header:
 		header.write("""
+/*
+		 @=@
+	   @@,.,@
+	  @.,.,.,@
+	 @@,.,.,.@@
+	 @,.,.,.,.@@
+	@,.,.,.,.,.,@
+@@@@,.,.,.,.,.,.@@@@
+@@@,.,.,.,.,.,.,.,@@
+@*=@@@@@@@@@@@@@@@:@
+ @@+-.*+:::.    :@@ 
+   @@@@@@@@@@@@@@
+	   
+	   Yeast
+*/
 // Generated with the Yeast Programming Language
-// https://github.com/SoftPankek7/Yeast. Based on the Bread programming language, see:
+// https://github.com/SoftPankek7/Yeast.
+// Based on the Bread programming language, see:
 // https://github.com/angrypig555/bread.
+//
 // The whole project is MIT Licensed!!!
 // This includes the compiler, generated header, and anything originating from the repository.
 
-// Made for Yeast v1.0.2 (Backwards compatible)
+// Made for Yeast v1.0.2 (Backwards compatible - hopefully)
 // Header v3
 
 #ifndef YEAST_RUNTIME_H
