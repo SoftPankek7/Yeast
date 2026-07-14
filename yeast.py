@@ -5,7 +5,7 @@ import shutil
 import sys
 import os
 
-version = "1.0.7"
+version = "1.0.8"
 
 ___settings = {
 	"keepTempC": False, # Whether it should keep tmp C code for future use
